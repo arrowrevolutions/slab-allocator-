@@ -171,7 +171,7 @@ void slab_dealloc(void* ptr){
     delete_slab(ptr);
     master_desc* mdesc=(master_desc*)((addr_t)desc&(~(BLOCK_SIZE-1)));
     mdesc->free_amount+=1;
-    if(mdesc->free_amount==255){ //the maximum amount of desc are 255 bc master desc takes one of them
+    if(mdesc->free_amount==127){ //the maximum amount of desc are 127 bc master desc takes one of them
       mdesc->free_amount=0;
       mdesc->head_off=0;
       mdesc->flag=0;
