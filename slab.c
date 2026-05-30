@@ -55,7 +55,7 @@ __attribute__ ((always_inline)) static slab_desc* create_slab_desc(addr_t slab_o
   slab_desc* desc=(slab_desc*)free_place;
   mdesc=(master_desc*)(((addr_t)free_place)&(~(BLOCK_SIZE-1)));
   if(free_place->next==(slab_chain*)0 && mdesc->free_amount>1){ //it means thet they are some not mapped descs
-    free_place=(slab_chain*)(addr_t)free_place+DESC_SIZE;
+    free_place=(slab_chain*)((addr_t)free_place)+DESC_SIZE;
   }else{
     free_place=free_place->next;
   }
