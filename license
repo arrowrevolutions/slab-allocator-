@@ -1,0 +1,32 @@
+Memory Allocator License 
+Copyright (c) 2026 [Arrow Revolutions]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+modify, and integrate the Software into both open-source and closed-source 
+(proprietary) projects, subject to the following strict conditions:
+
+1. ATTRIBUTION: You must clearly and prominently credit [Arrow Revolutions] 
+   as the original author in your documentation, source headers, and credits.
+
+2. NON-COMMERCIAL USE: You may NOT use this Software, its modifications, or 
+   derivative works for any commercial purposes, marketing, or financial gain.
+
+3. CLOSED-SOURCE FRIENDLY: You are explicitly permitted to link or embed this 
+   Software inside your own larger works (including proprietary OS kernels) and 
+   keep your own downstream code CLOSED-SOURCE.
+
+4. ANTI-AGGRESSIVE FORKING & NO REBRANDING: 
+   - You may NOT remove, alter, or obscure the original project name ("Arrow Revolutions" 
+     or its specific subsystem naming) from any derivative works or forks.
+   - Hostile or aggressive forking aimed at eclipsing, replacing, or rebranding 
+     the original Software is strictly prohibited. 
+   - Any public fork or modification must clearly state that it is a derivative work 
+     of the original project and link back to the primary repository.
+5. NO AI TRAINING: 
+   - You may NOT use this Software or its source code to train, fine-tune, or test artificial intelligence models, machine learning algorithms, or automated code generation tools.
+6. PATENT RETALIATION: If you or any entity file a patent lawsuit against the original author 
+   - Claiming that this Software infringes upon your patents, your license and all rights granted to you 
+   under this document terminate automatically
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
