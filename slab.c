@@ -1,7 +1,7 @@
 /* 
  * Copyright (c) 2026 Arrow Revolutions. All rights reserved.
  * Licensed under the Memory Allocator License (Non-Commercial, Anti-Aggressive Forking).
- * Project repository:https://github.com/arrowrevolutions/slab-allocator-/tree/main
+ * Project repository: https://github.com
  */
 
 
@@ -33,7 +33,7 @@ slab_chain* free_place;
 //for the first one-hart system it'll be good 
 
 
-__attribute__ ((always_inline)) static slab_desc* create_slab_desc(addr_t slab_order){
+__attribute__ ((no_inline)) static slab_desc* create_slab_desc(addr_t slab_order){
   master_desc* mdesc;
   //unsigned char flg=0;
   if(free_place==(slab_chain*)0){
@@ -96,12 +96,12 @@ void* slab_alloc(addr_t size){
   addr_t base_ptr=(addr_t)desc->ptr;
 
 
-  base_ptr+=desc->size*desc->head_off;
+  base_ptr+=desc->head_off<<find_order(desc->size);
   slab_chain* chain=(slab_chain*)base_ptr;
 
   if(chain->next!=(slab_chain*)0){
     chain=chain->next;
-    desc->head_off=((addr_t)chain-(addr_t)desc->ptr)/desc->size;
+    desc->head_off=((addr_t)chain-(addr_t)desc->ptr)>>(find_order(desc->size));
   }else{
     if(desc->free_amount!=0){
       desc->head_off+=1;
@@ -120,9 +120,9 @@ void slab_dealloc(void* ptr){
   
   addr_t base=(addr_t)ptr;
   
-  base=(base&(BLOCK_SIZE-1))/desc->size; //head off
+  base=(base&(BLOCK_SIZE-1))>>(find_order(desc->size)); //head off
 
-  addr_t near=((addr_t)ptr&(~(BLOCK_SIZE-1)))+(desc->size*desc->head_off);
+  addr_t near=((addr_t)ptr&(~(BLOCK_SIZE-1)))+(desc->head_off<<find_order(desc->size));
 
   slab_chain* chain=(slab_chain*)near;
   slab_chain* next_chain=(slab_chain*)ptr;
@@ -130,7 +130,7 @@ void slab_dealloc(void* ptr){
   if(next_chain->next!=(slab_chain*)0){
     chain->next=next_chain->next;
   }else if(desc->free_amount>1){
-    chain->next=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->size * desc->head_off));
+    chain->next=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->head_off<<find_order(desc->size)));
         desc->head_off+=1;
 
   }
@@ -144,7 +144,7 @@ void slab_dealloc(void* ptr){
   desc->free_amount+=1;
   addr_t off=find_order(desc->size)-SLAB_MIN_ORDER;
 
-  if(desc->free_amount==(BLOCK_SIZE/desc->size)){
+  if(desc->free_amount==(BLOCK_SIZE>>find_order(desc->size))){
     if(slab_freelist[off]==desc){
       if(slab_freelist[off]->next!=(slab_desc*)0 && slab_freelist[off]->next!=slab_freelist[off]){
         slab_freelist[off]=slab_freelist[off]->next;
