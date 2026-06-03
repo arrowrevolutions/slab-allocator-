@@ -38,7 +38,7 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
   //unsigned char flg=0;
   if(free_place==(slab_chain*)0){
       void* ptr=mlc(BLOCK_SIZE);
-//      uart_puthex((addr_t)ptr);
+
 
       if(ptr==(void*)0){
           return (slab_desc*)0;
