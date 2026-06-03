@@ -85,7 +85,7 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
 
 
 __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
-  addr_t x=find_order(size);
+  addr_t x=find_order(size); //instead of find_order(desc->size) bc they're the same
   if(x<SLAB_MIN_ORDER){
     x=SLAB_MIN_ORDER;
   }
@@ -93,15 +93,17 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
   if(desc==(slab_desc*)0){
     desc=create_slab_desc(x);
   }
-  addr_t base_ptr=(addr_t)desc->ptr;
-  addr_t order=find_order(desc->size);
+  void* ptr=desc->ptr;
+  addr_t base_ptr=(addr_t)ptr;
 
-  base_ptr+=desc->head_off<<order;
+  base_ptr+=desc->head_off<<x;
   slab_chain* chain=(slab_chain*)base_ptr;
+
+
 
   if(chain->next!=(slab_chain*)0){
     chain=chain->next;
-    desc->head_off=((addr_t)chain-(addr_t)desc->ptr)>>order;
+    desc->head_off=((addr_t)chain-(addr_t)ptr)>>x;
   }else{
     if(desc->free_amount!=0){
       desc->head_off+=1;
@@ -111,8 +113,6 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
 
   desc->free_amount-=1;
   return (void*)base_ptr;
-
-
 }
 
 inline void slab_dealloc(void* ptr){
@@ -139,7 +139,7 @@ inline void slab_dealloc(void* ptr){
 
 
   next_chain->next=chain;
-  /*using lifo algorithm with some improvement*/
+  /*due to the usage of the lifo algorithm. here next and prev stuff is not revesed. but... a little bit of wacky*/
 
   chain->prev=next_chain;
   desc->head_off=base;
