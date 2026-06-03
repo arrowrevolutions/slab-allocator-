@@ -166,10 +166,10 @@ inline void slab_dealloc(void* ptr){
     //for use-after-free protection
     //why i didn't done that with the bottom? bc it became this:
     void* ptr=desc->ptr;
-    addr_t order=get_order(desc->ptr);
+    addr_t buddy_order=get_order(desc->ptr);
     pt[0]=0;
     pt[1]=0;
-    buddy_dealloc(ptr,order);
+    buddy_dealloc(ptr,buddy_order);
     delete_slab(ptr);
     master_desc* mdesc=(master_desc*)((addr_t)desc&(~(BLOCK_SIZE-1)));
     mdesc->free_amount+=1;
