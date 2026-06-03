@@ -105,8 +105,10 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
     chain=chain->next;
     desc->head_off=((addr_t)chain-(addr_t)ptr)>>x;
   }else{
-    if(desc->free_amount!=0){
+    if(desc->free_amount>1){
       desc->head_off+=1;
+    }else{
+      slab_freelist[x-SLAB_MIN_ORDER]=slab_freelist[x-SLAB_MIN_ORDER]->next;
     }
   }
 
