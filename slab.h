@@ -21,7 +21,7 @@ typedef struct master_desc{
 }master_desc __attribute__((packed));
 
 
-extern __attribute__ ((noinline)) void* slab_alloc(addr_t size);
+extern __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size);
 
-extern __attribute__ ((noinline)) void slab_dealloc(void* ptr);
+extern __attribute__ ((always_inline)) inline void slab_dealloc(void* ptr);
 #endif
