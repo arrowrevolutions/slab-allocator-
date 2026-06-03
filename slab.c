@@ -194,6 +194,7 @@ inline void slab_dealloc(void* ptr){
   }else{
     if(slab_freelist[off]!=(slab_desc*)0 && slab_freelist[off]!=desc){
       slab_freelist[off]->next=desc;
+      desc->prev=slab_freelist[off];
     }    
     slab_freelist[off]=desc;
   }
