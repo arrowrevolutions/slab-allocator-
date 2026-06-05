@@ -103,6 +103,8 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
 
   if(chain->next!=(slab_chain*)0){
     chain=chain->next;
+    chain->prev->next=(slab_chain*)0;
+    chain->prev=(slab_chain*)0;
     desc->head_off=((addr_t)chain-(addr_t)ptr)>>x;
   }else{
     if(desc->free_amount>1){
@@ -126,21 +128,21 @@ inline void slab_dealloc(void* ptr){
 
   base=(base&(BLOCK_SIZE-1))>>(order); //head off
   slab_chain* next_chain=(slab_chain*)ptr;
+  next_chain->next=(slab_chain*)0;
+  next_chain->prev=(slab_chain*)0;
   if(desc->free_amount!=0){
     addr_t near=((addr_t)ptr&(~(BLOCK_SIZE-1)))+(desc->head_off<<order);
 
     slab_chain* chain=(slab_chain*)near;
 
-    if(next_chain->next!=(slab_chain*)0){
-      chain->next=next_chain->next;
-    }else if(desc->free_amount!=0){
+    if(desc->free_amount!=0 && chain->next==(slab_chain*)0){
       desc->head_off+=1;
-      chain->next=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->head_off<<order));
-
+      slab_chain* unmapped_chain=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->head_off<<order));
+      chain->next=unmapped_chain;
+      unmapped_chain->prev=chain;
     }
     next_chain->next=chain;
     /*due to the usage of the lifo algorithm. here next and prev stuff is not revesed. but... a little bit of wacky*/
-
     chain->prev=next_chain;
   }
 
