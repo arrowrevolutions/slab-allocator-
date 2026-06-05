@@ -134,8 +134,8 @@ inline void slab_dealloc(void* ptr){
   if(next_chain->next!=(slab_chain*)0){
     chain->next=next_chain->next;
   }else if(desc->free_amount>1){
+    desc->head_off+=1;
     chain->next=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->head_off<<order));
-        desc->head_off+=1;
 
   }
 
