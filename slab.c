@@ -125,25 +125,25 @@ inline void slab_dealloc(void* ptr){
   addr_t order=find_order(desc->size);
 
   base=(base&(BLOCK_SIZE-1))>>(order); //head off
-
-  addr_t near=((addr_t)ptr&(~(BLOCK_SIZE-1)))+(desc->head_off<<order);
-
-  slab_chain* chain=(slab_chain*)near;
   slab_chain* next_chain=(slab_chain*)ptr;
+  if(desc->free_amount!=0){
+    addr_t near=((addr_t)ptr&(~(BLOCK_SIZE-1)))+(desc->head_off<<order);
 
-  if(next_chain->next!=(slab_chain*)0){
-    chain->next=next_chain->next;
-  }else if(desc->free_amount>1){
-    desc->head_off+=1;
-    chain->next=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->head_off<<order));
+    slab_chain* chain=(slab_chain*)near;
 
+    if(next_chain->next!=(slab_chain*)0){
+      chain->next=next_chain->next;
+    }else if(desc->free_amount>1){
+      desc->head_off+=1;
+      chain->next=(slab_chain*)((((addr_t)ptr)&(~(BLOCK_SIZE-1)))+(desc->head_off<<order));
+
+    }
+    next_chain->next=chain;
+    /*due to the usage of the lifo algorithm. here next and prev stuff is not revesed. but... a little bit of wacky*/
+
+    chain->prev=next_chain;
   }
 
-
-  next_chain->next=chain;
-  /*due to the usage of the lifo algorithm. here next and prev stuff is not revesed. but... a little bit of wacky*/
-
-  chain->prev=next_chain;
   desc->head_off=base;
   desc->free_amount+=1;
   addr_t off=order-SLAB_MIN_ORDER;
@@ -199,4 +199,3 @@ inline void slab_dealloc(void* ptr){
     slab_freelist[off]=desc;
   }
 }
-
