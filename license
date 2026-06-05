@@ -12,9 +12,12 @@ modify, and integrate the Software into both open-source and closed-source
 2. NON-COMMERCIAL USE: You may NOT use this Software, its modifications, or 
    derivative works for any commercial purposes, marketing, or financial gain.
 
-3. CLOSED-SOURCE FRIENDLY: You are explicitly permitted to link or embed this 
-   Software inside your own larger works (including proprietary OS kernels) and 
-   keep your own downstream code CLOSED-SOURCE.
+3. CLOSED-SOURCE FRIENDLY: You are explicitly permitted to link 
+   or embed this Software inside your own larger works (including 
+   proprietary OS kernels) and keep your own downstream code 
+   CLOSED-SOURCE, provided such use remains strictly non-commercial 
+   as defined in Section 2.
+
 
 4. ANTI-AGGRESSIVE FORKING & NO REBRANDING: 
    - You may NOT remove, alter, or obscure the original project name ("Arrow Revolutions" 
