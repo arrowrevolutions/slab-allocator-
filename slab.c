@@ -35,7 +35,6 @@ slab_chain* free_place;
 
 __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t slab_order){
   master_desc* mdesc;
-  //unsigned char flg=0;
   if(free_place==(slab_chain*)0){
       void* ptr=mlc(BLOCK_SIZE);
 
@@ -168,7 +167,7 @@ inline void slab_dealloc(void* ptr){
     desc->next=(slab_desc*)0;
     addr_t* pt=(addr_t*)desc;
     //for use-after-free protection
-    //why i didn't done that with the bottom? bc it became this:
+    //why i didn't done that with the bottom? because it became this:
     void* ptr=desc->ptr;
     addr_t buddy_order=get_order(desc->ptr);
     pt[0]=0;
