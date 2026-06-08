@@ -29,56 +29,80 @@ slab_desc* slab_freelist[DELTA_SLAB_ORDER+1];
 //all the free slab descriptors
 
 
-slab_chain* free_place;
+master_desc* free_place;
+
+//free place shows where free descriptor chunks are
+
 //for the first one-hart system it'll be good 
 
 
-__attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t slab_order){
-  master_desc* mdesc;
-  if(free_place==(slab_chain*)0){
-      void* ptr=mlc(BLOCK_SIZE);
+__attribute__ ((always_inline)) inline static slab_desc* get_desc(addr_t slab_order){
+  master_desc* mdesc = free_place;
+  //there are no null pointer protection because in crate_slab_desc there is already a protection for it.
 
-
-      if(ptr==(void*)0){
-          return (slab_desc*)0;
-      }
-      
-      free_place=(slab_chain*)(((addr_t)ptr)+DESC_SIZE);
-      mdesc=(master_desc*)ptr;
-      mdesc->head_off=1;
-      mdesc->free_amount=(1<<((BLOCK_LOG2-DESC_SIZE_LOG2)+1))-1;
-      mdesc->flag=1;
-  }
-  
-
-  slab_desc* desc=(slab_desc*)free_place;
-  mdesc=(master_desc*)(((addr_t)free_place)&(~(BLOCK_SIZE-1)));
-  if(free_place->next==(slab_chain*)0 && mdesc->free_amount>1){ //it means thet they are some not mapped descs
-    free_place=(slab_chain*)((addr_t)free_place)+DESC_SIZE;
+  slab_desc* desc=(slab_desc*)((addr_t)mdesc)+(mdesc->head_off<<DESC_SIZE_LOG2);
+  if(mdesc->free_amount > 1){
+    if(desc->next!=(slab_desc*)0){
+      mdesc->head_off = (((addr_t)desc->next)&(BLOCK_SIZE-1))>>DESC_SIZE_LOG2;
+    }else{
+      mdesc->head_off += 1; //it means that the next descriptor is not mapped
+    }
   }else{
     free_place=free_place->next;
   }
-
-  if(free_place!=(slab_chain*)0){
-    mdesc->head_off=((addr_t)free_place&(BLOCK_SIZE-1))>>DESC_SIZE_LOG2;// dividing desc size to find a headoff
+  mdesc->free_amount -= 1;
+  slab_desc* freelist = slab_freelist[slab_order-SLAB_MIN_ORDER];
+  desc->next = freelist;
+  if(freelist != (slab_desc*)0){
+    freelist->prev = desc;
   }
-  mdesc->free_amount-=1;
-  if(free_place!=(slab_chain*)0){
-    free_place->prev=(slab_chain*)0; //wipes off the previous one bc it's already is using.
+  slab_freelist[slab_order-SLAB_MIN_ORDER] = desc;
+
+  return desc;
+}
+
+__attribute__ ((always_inline)) inline static void return_desc(slab_desc* desc){
+  master_desc* mdesc=(master_desc*)(((addr_t)desc)&(~(BLOCK_SIZE-1)));
+
+  unsigned long head_offset=(((addr_t)desc)&(BLOCK_SIZE-1))>>DESC_SIZE_LOG2;
+  if(mdesc->free_amount!=0){
+    slab_desc* prev_desc=(slab_desc*)((addr_t)mdesc)+(mdesc->head_off<<DESC_SIZE_LOG2);
+    prev_desc->prev=desc;
+    desc->next=prev_desc;
   }
-  desc->size=(1<<slab_order);
-  desc->free_amount=(1<<(BLOCK_LOG2-slab_order));
-  desc->head_off=0;
-  desc->ptr=mlc_slb((BLOCK_SIZE),desc);
-
-
-  addr_t pos=slab_order-SLAB_MIN_ORDER;
-
-  desc->prev=slab_freelist[pos];
-  if(slab_freelist[pos]!=(slab_desc*)0){
-    slab_freelist[pos]->next=desc;
+  mdesc->head_off=head_offset;
+  mdesc->free_amount+=1;
+  if(mdesc->free_amount == ((1<<(BLOCK_LOG2-DESC_SIZE_LOG2))-1)){
+    mdl((void*)mdesc);
   }
-  slab_freelist[pos]=desc;
+}
+
+__attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t slab_order){
+  master_desc* mdesc;
+  if(free_place == (master_desc*)0){
+    void* ptr = mlc(BLOCK_SIZE);
+
+    if(ptr == (void*)0){
+      return (slab_desc*)0;
+    }
+      
+    mdesc=(master_desc*)ptr;
+    mdesc->head_off = 1;
+    mdesc->free_amount = (1<<((BLOCK_LOG2-DESC_SIZE_LOG2)+1))-1;
+    mdesc->next = free_place;
+    if(free_place != (master_desc*)0){
+      free_place->prev = mdesc;
+    }
+    free_place=mdesc;
+  }
+
+  slab_desc* desc = get_desc(slab_order);
+
+  desc->size = (1<<slab_order);
+  desc->free_amount = (1<<(BLOCK_LOG2-slab_order));
+  desc->head_off = 0;
+  desc->ptr = mlc_slb((BLOCK_SIZE),desc);
+
   return desc;
 }
 
@@ -174,24 +198,8 @@ inline void slab_dealloc(void* ptr){
     pt[1]=0;
     buddy_dealloc(ptr,buddy_order);
     delete_slab(ptr);
-    master_desc* mdesc=(master_desc*)((addr_t)desc&(~(BLOCK_SIZE-1)));
-    mdesc->free_amount+=1;
-    if(mdesc->free_amount==127){ //the maximum amount of desc are 127 bc master desc takes one of them
-      mdesc->free_amount=0;
-      mdesc->head_off=0;
-      mdesc->flag=0;
-      //use-after-free protection
-      buddy_dealloc((void*)mdesc,MIN_ORDER);
-    }else{
-      slab_chain* desc_chain=(slab_chain*)desc;
-      desc_chain->next=free_place;
-      desc_chain->prev=(slab_chain*)0;
-      //natural use-after-free!
-      if(free_place!=(slab_chain*)0){
-        free_place->prev=desc_chain;
-      }
-      free_place=desc_chain;
-    }
+    return_desc(desc);
+  
   }else{
     if(slab_freelist[off]!=(slab_desc*)0 && slab_freelist[off]!=desc){
       slab_freelist[off]->next=desc;
