@@ -1,3 +1,8 @@
+/* 
+ * Copyright (c) 2026 Arrow Revolutions. All rights reserved.
+ * Licensed under the Memory Allocator License (Non-Commercial, Anti-Aggressive Forking).
+ * Project repository: https://github.com/arrowrevolutions/slab-allocator-/tree/main
+ */
 #ifndef SLAB_H
 #define SLAB_H
 
@@ -11,14 +16,14 @@ typedef struct slab_desc{
   void* ptr;
   struct slab_desc* next;
   struct slab_desc* prev;
-}slab_desc __attribute__((packed));
+}slab_desc __attribute__ ((packed));
 
 typedef struct master_desc{
   unsigned long free_amount;
   unsigned long head_off;
-  unsigned long flag; //1 for valid
-  unsigned long padding2;
-}master_desc __attribute__((packed));
+  struct master_desc* next;
+  struct master_desc* prev;
+}master_desc __attribute__ ((packed));
 
 
 extern __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size);
