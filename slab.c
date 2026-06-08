@@ -40,7 +40,7 @@ __attribute__ ((always_inline)) inline static slab_desc* get_desc(addr_t slab_or
   master_desc* mdesc = free_place;
   //there are no null pointer protection because in crate_slab_desc there is already a protection for it.
 
-  slab_desc* desc=(slab_desc*)((addr_t)mdesc)+(mdesc->head_off<<DESC_SIZE_LOG2);
+  slab_desc* desc=(slab_desc*)(((addr_t)mdesc)+((mdesc->head_off)<<DESC_SIZE_LOG2));
   if(mdesc->free_amount > 1){
     if(desc->next!=(slab_desc*)0){
       mdesc->head_off = (((addr_t)desc->next)&(BLOCK_SIZE-1))>>DESC_SIZE_LOG2;
@@ -50,6 +50,7 @@ __attribute__ ((always_inline)) inline static slab_desc* get_desc(addr_t slab_or
   }else{
     free_place=free_place->next;
   }
+ 
   mdesc->free_amount -= 1;
   slab_desc* freelist = slab_freelist[slab_order-SLAB_MIN_ORDER];
   desc->next = freelist;
@@ -88,8 +89,9 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
       
     mdesc=(master_desc*)ptr;
     mdesc->head_off = 1;
-    mdesc->free_amount = (1<<((BLOCK_LOG2-DESC_SIZE_LOG2)+1))-1;
+    mdesc->free_amount = (1<<((BLOCK_LOG2-DESC_SIZE_LOG2)))-1;
     mdesc->next = free_place;
+    mdesc->prev=(master_desc*)0;
     if(free_place != (master_desc*)0){
       free_place->prev = mdesc;
     }
@@ -102,7 +104,6 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
   desc->free_amount = (1<<(BLOCK_LOG2-slab_order));
   desc->head_off = 0;
   desc->ptr = mlc_slb((BLOCK_SIZE),desc);
-
   return desc;
 }
 
@@ -123,7 +124,6 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
   slab_chain* chain=(slab_chain*)base_ptr;
 
 
-
   if(chain->next!=(slab_chain*)0){
     chain=chain->next;
     chain->prev->next=(slab_chain*)0;
@@ -136,8 +136,6 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
       slab_freelist[x-SLAB_MIN_ORDER]=slab_freelist[x-SLAB_MIN_ORDER]->next;
     }
   }
-
-
   desc->free_amount-=1;
   return (void*)base_ptr;
 }
