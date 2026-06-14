@@ -36,10 +36,9 @@ master_desc* free_place;
 //for the first one-hart system it'll be good 
 
 
-__attribute__ ((always_inline)) inline static slab_desc* get_desc(addr_t slab_order){
+__attribute__ ((always_inline)) inline static slab_desc* __get_desc(addr_t slab_order){
   master_desc* mdesc = free_place;
   //there are no null pointer protection because in crate_slab_desc there is already a protection for it.
-
   slab_desc* desc=(slab_desc*)(((addr_t)mdesc)+((mdesc->head_off)<<DESC_SIZE_LOG2));
   if(mdesc->free_amount > 1){
     if(desc->next!=(slab_desc*)0){
@@ -50,6 +49,7 @@ __attribute__ ((always_inline)) inline static slab_desc* get_desc(addr_t slab_or
   }else{
     free_place=free_place->next;
   }
+
  
   mdesc->free_amount -= 1;
   slab_desc* freelist = slab_freelist[slab_order-SLAB_MIN_ORDER];
@@ -64,7 +64,6 @@ __attribute__ ((always_inline)) inline static slab_desc* get_desc(addr_t slab_or
 
 __attribute__ ((always_inline)) inline static void return_desc(slab_desc* desc){
   master_desc* mdesc=(master_desc*)(((addr_t)desc)&(~(BLOCK_SIZE-1)));
-
   unsigned long head_offset=(((addr_t)desc)&(BLOCK_SIZE-1))>>DESC_SIZE_LOG2;
   if(mdesc->free_amount!=0){
     slab_desc* prev_desc=(slab_desc*)((addr_t)mdesc)+(mdesc->head_off<<DESC_SIZE_LOG2);
@@ -74,11 +73,18 @@ __attribute__ ((always_inline)) inline static void return_desc(slab_desc* desc){
   mdesc->head_off=head_offset;
   mdesc->free_amount+=1;
   if(mdesc->free_amount == ((1<<(BLOCK_LOG2-DESC_SIZE_LOG2))-1)){
+    free_place=free_place->next;
+    mdesc->free_amount=0;
+    mdesc->head_off=0;
+    mdesc->next=(master_desc*)0;
+    mdesc->prev=(master_desc*)0;
     mdl((void*)mdesc);
   }
+
 }
 
 __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t slab_order){
+  
   master_desc* mdesc;
   if(free_place == (master_desc*)0){
     void* ptr = mlc(BLOCK_SIZE);
@@ -98,12 +104,12 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
     free_place=mdesc;
   }
 
-  slab_desc* desc = get_desc(slab_order);
-
+  slab_desc* desc = __get_desc(slab_order);
   desc->size = (1<<slab_order);
   desc->free_amount = (1<<(BLOCK_LOG2-slab_order));
   desc->head_off = 0;
   desc->ptr = mlc_slb((BLOCK_SIZE),desc);
+  memset(desc->ptr,0,BLOCK_SIZE);
   return desc;
 }
 
@@ -118,11 +124,10 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
     desc=create_slab_desc(x);
   }
   void* ptr=desc->ptr;
-  addr_t base_ptr=(addr_t)ptr;
 
+  addr_t base_ptr=(addr_t)ptr;
   base_ptr+=desc->head_off<<x;
   slab_chain* chain=(slab_chain*)base_ptr;
-
 
   if(chain->next!=(slab_chain*)0){
     chain=chain->next;
@@ -142,7 +147,7 @@ __attribute__ ((always_inline)) inline void* slab_alloc(addr_t size){
 
 inline void slab_dealloc(void* ptr){
   slab_desc* desc=show_slab(ptr);
-  
+  memset(ptr,0,desc->size);
   addr_t base=(addr_t)ptr;
   
   addr_t order=find_order(desc->size);
