@@ -1,6 +1,6 @@
 /* 
  * Copyright (c) 2026 Arrow Revolutions. All rights reserved.
- * Licensed under the Memory Allocator License (Non-Commercial, Anti-Aggressive Forking).
+ * Licensed under the Memory Allocator License (Memory Allocation License).
  * Project repository: https://github.com/arrowrevolutions/slab-allocator-/tree/main
  */
 #ifndef SLAB_H
