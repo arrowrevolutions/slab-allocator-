@@ -16,19 +16,22 @@ closed-source (proprietary) projects, subject to the following strict conditions
    (and any direct modifications made to them) remain subject to the terms of 
    this License, without affecting the licensing of the surrounding larger work.
 
-3. ANTI-AGGRESSIVE FORKING & NO REBRANDING: 
-   - You may NOT remove, alter, or obscure the original project name ("Arrow Revolutions" 
-     or its specific subsystem naming) from any derivative works or forks.
-   - Hostile or aggressive forking aimed at eclipsing, replacing, or rebranding 
-     the original Software is strictly prohibited. 
-   - Any public fork or modification must clearly state that it is a derivative work 
-     of the original project and link back to the primary repository.
+3.	ANTI-AGGRESSIVE FORKING & NO REBRANDING:
+	- You may NOT remove, alter, or obscure the original project name (“Arrow Revolutions” or its specific subsystem naming) from any derivative works or forks.
+	- A fork or derivative work is considered aggressive if it is distributed under a name confusingly similar to “Arrow Revolutions”, is marketed as a replacement for the original Software, or deliberately omits attribution to the original project.
+	- Any public fork or modification must clearly state that it is a derivative work of the original project and link back to the primary repository.
 
-4. NO AI TRAINING: 
-   - You may NOT use this Software or its source code to train, fine-tune, or test artificial intelligence models, machine learning algorithms, or automated code generation tools.
+4.	NO AI TRAINING:
+	- You may NOT use this Software or its source code to train, fine-tune, or evaluate machine learning or artificial intelligence models.
 
 5. PATENT RETALIATION: If you or any entity file a patent lawsuit against the original author 
    claiming that this Software infringes upon your patents, your license and all rights granted to you 
    under this document terminate automatically.
+
+6.	TERMINATION:
+	- Any violation of conditions 1,3,4 or 5 automatically and immediately terminates all rights granted to you under this License without notice.
+	- Upon termination, you must cease all use and distribution of the Software and any derivative works.
+	- Termination of your rights does not affect the rights of any third parties who received the Software from you in compliance with this License.
+
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED.
