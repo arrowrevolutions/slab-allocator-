@@ -1,9 +1,9 @@
 /* 
  * Copyright (c) 2026 Arrow Revolutions. All rights reserved.
- * Licensed under the Memory Allocator License (Memory Allocation License).
+ * Licensed under the Memory Allocator License (Non-Commercial, Anti-Aggressive Forking).
  * Project repository: https://github.com/arrowrevolutions/slab-allocator-/tree/main
+ * Designed for NQ OS™
  */
-
 
 
 #include "slab.h"
@@ -169,7 +169,7 @@ inline void slab_dealloc(void* ptr){
       unmapped_chain->prev=chain;
     }
     next_chain->next=chain;
-    /*due to the usage of the lifo algorithm. here next and prev stuff is not revesed. but... a little bit of wacky*/
+    /*due to the usage of the lifo algorithm. here next and prev stuff is not revesed. but... a little bit of interesting*/
     chain->prev=next_chain;
   }
 
@@ -191,7 +191,7 @@ inline void slab_dealloc(void* ptr){
     if(desc->next!=(slab_desc*)0){
         desc->next->prev=desc->prev;
     }
-    desc->prev=(slab_desc*)0;//head off
+    desc->prev=(slab_desc*)0;//head_off
     desc->next=(slab_desc*)0;
     addr_t* pt=(addr_t*)desc;
     //for use-after-free protection
