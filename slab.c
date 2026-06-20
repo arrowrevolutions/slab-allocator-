@@ -7,10 +7,9 @@
 
 
 #include "slab.h"
-#include "memory-mng.h"
-#include "buddy.h"
-#include "../info/types.h"
-#include "../debug.h"
+#include "memory.h"
+#include "buddy-mem.h"
+#include "../info/templates.h"
 
 typedef struct slab_chain{
     struct slab_chain* next;
@@ -79,7 +78,7 @@ __attribute__ ((always_inline)) inline static void return_desc(slab_desc* desc){
     mdesc->head_off=0;
     mdesc->next=(master_desc*)0;
     mdesc->prev=(master_desc*)0;
-    mdl((void*)mdesc);
+    ndl((void*)mdesc);
   }
 
 }
@@ -88,7 +87,7 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
   
   master_desc* mdesc;
   if(free_place == (master_desc*)0){
-    void* ptr = mlc(BLOCK_SIZE);
+    void* ptr = nlc(BLOCK_SIZE);
 
     if(ptr == (void*)0){
       return (slab_desc*)0;
@@ -109,7 +108,7 @@ __attribute__ ((always_inline)) inline static slab_desc* create_slab_desc(addr_t
   desc->size = (1<<slab_order);
   desc->free_amount = (1<<(BLOCK_LOG2-slab_order));
   desc->head_off = 0;
-  desc->ptr = mlc_slb((BLOCK_SIZE),desc);
+  desc->ptr = nlc_slb((BLOCK_SIZE),desc);
   memset(desc->ptr,0,BLOCK_SIZE);
   return desc;
 }
