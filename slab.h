@@ -6,7 +6,7 @@
 #ifndef SLAB_H
 #define SLAB_H
 
-#include "../info/types.h"
+#include "../info/templates.h"
 
 typedef struct slab_desc{
   unsigned short size;
